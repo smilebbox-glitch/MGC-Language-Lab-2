@@ -100,6 +100,9 @@ jobs:
           POSTGRES_USER=mgc_languages
           POSTGRES_PASSWORD=ci-old-db-password-0123456789
           POSTGRES_MAX_CONNECTIONS=120
+          OIDC_STATE_SECRET=ci-lan-state-secret-0123456789abcdef
+          METRICS_TOKEN=ci-lan-metrics-secret-0123456789abcdef
+          MGC_ADMIN_PASSWORD=ci-lan-admin-password-0123456789
           EOF
 
           docker compose --env-file .env.ci-lan -f docker-compose.lan.yml down -v --remove-orphans || true
