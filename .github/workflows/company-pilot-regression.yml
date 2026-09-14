@@ -5,28 +5,37 @@ on:
     branches:
       - main
       - fix/company-pilot-env-template
+      - fix/lan-db-password-sync
     paths:
       - .env.company-pilot.example
       - scripts/start_company_pilot.ps1
+      - scripts/start_lan_windows.ps1
+      - scripts/repair_lan_db_password.ps1
       - scripts/company_pilot_preflight.py
       - docker-compose.pilot.yml
+      - docker-compose.lan.yml
       - static/index.html
       - static/frontend/navigation.js
       - static/frontend/premium_home_v631.js
       - static/premium_home_v631.css
       - tests/test_mgc_language_lab_2_premium.py
+      - tests/test_lan_db_password_recovery_contract.py
       - .github/workflows/company-pilot-regression.yml
   pull_request:
     paths:
       - .env.company-pilot.example
       - scripts/start_company_pilot.ps1
+      - scripts/start_lan_windows.ps1
+      - scripts/repair_lan_db_password.ps1
       - scripts/company_pilot_preflight.py
       - docker-compose.pilot.yml
+      - docker-compose.lan.yml
       - static/index.html
       - static/frontend/navigation.js
       - static/frontend/premium_home_v631.js
       - static/premium_home_v631.css
       - tests/test_mgc_language_lab_2_premium.py
+      - tests/test_lan_db_password_recovery_contract.py
       - .github/workflows/company-pilot-regression.yml
   workflow_dispatch:
 
@@ -72,6 +81,9 @@ jobs:
 
       - name: Verify premium design remains canonical
         run: python tests/test_mgc_language_lab_2_premium.py
+
+      - name: Verify LAN database password recovery contract
+        run: python tests/test_lan_db_password_recovery_contract.py
 
       - name: Exercise company preflight with disposable values
         shell: bash
