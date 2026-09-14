@@ -5,35 +5,44 @@ on:
     branches:
       - main
       - fix/company-pilot-env-template
+      - fix/lan-db-password-sync
     paths:
       - .env.company-pilot.example
       - scripts/start_company_pilot.ps1
+      - scripts/start_lan_windows.ps1
+      - scripts/repair_lan_db_password.ps1
       - scripts/company_pilot_preflight.py
       - docker-compose.pilot.yml
+      - docker-compose.lan.yml
       - static/index.html
       - static/frontend/navigation.js
       - static/frontend/premium_home_v631.js
       - static/premium_home_v631.css
       - tests/test_mgc_language_lab_2_premium.py
+      - tests/test_lan_db_password_recovery_contract.py
       - .github/workflows/company-pilot-regression.yml
   pull_request:
     paths:
       - .env.company-pilot.example
       - scripts/start_company_pilot.ps1
+      - scripts/start_lan_windows.ps1
+      - scripts/repair_lan_db_password.ps1
       - scripts/company_pilot_preflight.py
       - docker-compose.pilot.yml
+      - docker-compose.lan.yml
       - static/index.html
       - static/frontend/navigation.js
       - static/frontend/premium_home_v631.js
       - static/premium_home_v631.css
       - tests/test_mgc_language_lab_2_premium.py
+      - tests/test_lan_db_password_recovery_contract.py
       - .github/workflows/company-pilot-regression.yml
   workflow_dispatch:
 
 jobs:
   company-pilot-contract:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -72,6 +81,72 @@ jobs:
 
       - name: Verify premium design remains canonical
         run: python tests/test_mgc_language_lab_2_premium.py
+
+      - name: Verify LAN database password recovery contract
+        run: python tests/test_lan_db_password_recovery_contract.py
+
+      - name: Validate LAN PowerShell syntax
+        shell: pwsh
+        run: |
+          [scriptblock]::Create((Get-Content -Raw scripts/repair_lan_db_password.ps1)) | Out-Null
+          [scriptblock]::Create((Get-Content -Raw scripts/start_lan_windows.ps1)) | Out-Null
+
+      - name: Reproduce and repair persistent LAN PostgreSQL password mismatch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > .env.ci-lan <<'EOF'
+          POSTGRES_DB=mgc_languages
+          POSTGRES_USER=mgc_languages
+          POSTGRES_PASSWORD=ci-old-db-password-0123456789
+          POSTGRES_MAX_CONNECTIONS=120
+          OIDC_STATE_SECRET=ci-lan-state-secret-0123456789abcdef
+          METRICS_TOKEN=ci-lan-metrics-secret-0123456789abcdef
+          MGC_ADMIN_PASSWORD=ci-lan-admin-password-0123456789
+          EOF
+
+          compose=(docker compose --env-file .env.ci-lan -f docker-compose.lan.yml)
+          "${compose[@]}" down -v --remove-orphans || true
+          "${compose[@]}" up -d db
+
+          for i in $(seq 1 45); do
+            if "${compose[@]}" exec -T db pg_isready -U mgc_languages -d mgc_languages >/dev/null 2>&1; then
+              break
+            fi
+            sleep 2
+          done
+          "${compose[@]}" exec -T db pg_isready -U mgc_languages -d mgc_languages
+          "${compose[@]}" exec -T db psql -U mgc_languages -d mgc_languages -v ON_ERROR_STOP=1 -c "CREATE TABLE IF NOT EXISTS password_recovery_probe (id integer primary key, note text not null); INSERT INTO password_recovery_probe (id, note) VALUES (1, 'keep-me') ON CONFLICT (id) DO UPDATE SET note = EXCLUDED.note;"
+
+          network="mgc-languages-lan_backend"
+          old_pass='ci-old-db-password-0123456789'
+          new_pass='ci-new-db-password-9876543210'
+
+          docker run --rm --network "$network" -e "PGPASSWORD=$old_pass" postgres:16.4-alpine \
+            psql -h db -U mgc_languages -d mgc_languages -tAc 'SELECT 1' | grep -q '^1$'
+
+          sed -i "s/$old_pass/$new_pass/" .env.ci-lan
+
+          if docker run --rm --network "$network" -e "PGPASSWORD=$new_pass" postgres:16.4-alpine \
+            psql -h db -U mgc_languages -d mgc_languages -tAc 'SELECT 1' >/dev/null 2>&1; then
+            echo 'Expected new password to fail over the Docker network before reconciliation' >&2
+            exit 1
+          fi
+
+          pwsh -NoProfile -File scripts/repair_lan_db_password.ps1 -EnvFile .env.ci-lan -ComposeFile docker-compose.lan.yml
+
+          docker run --rm --network "$network" -e "PGPASSWORD=$new_pass" postgres:16.4-alpine \
+            psql -h db -U mgc_languages -d mgc_languages -tAc "SELECT note FROM password_recovery_probe WHERE id=1" | grep -q '^keep-me$'
+
+          if docker run --rm --network "$network" -e "PGPASSWORD=$old_pass" postgres:16.4-alpine \
+            psql -h db -U mgc_languages -d mgc_languages -tAc 'SELECT 1' >/dev/null 2>&1; then
+            echo 'Old password still authenticates over the Docker network after reconciliation' >&2
+            exit 1
+          fi
+
+      - name: Clean LAN PostgreSQL regression stack
+        if: always()
+        run: docker compose --env-file .env.ci-lan -f docker-compose.lan.yml down -v --remove-orphans || true
 
       - name: Exercise company preflight with disposable values
         shell: bash

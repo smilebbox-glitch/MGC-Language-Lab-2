@@ -212,6 +212,12 @@ if ($AppPeak -gt $Usable) {
 }
 Write-Host ""
 
+$DbRepairScript = Join-Path $Root "scripts\repair_lan_db_password.ps1"
+if (-not (Test-Path -LiteralPath $DbRepairScript)) {
+    throw "Missing LAN database credential recovery helper: $DbRepairScript"
+}
+& $DbRepairScript -EnvFile ".env.lan" -ComposeFile "docker-compose.lan.yml"
+
 $composeArgs = @("compose", "--env-file", ".env.lan", "-f", "docker-compose.lan.yml", "up", "-d")
 if (-not $SkipBuild) { $composeArgs += "--build" }
 & docker @composeArgs
