@@ -18,14 +18,14 @@ jobs:
     timeout-minutes: 35
     steps:
       - name: Checkout MGC Language Lab 2
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: build/server-premium-design
           path: target
           fetch-depth: 0
 
       - name: Checkout current working language service
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: smilebbox-glitch/mgc-languages
           ref: main
