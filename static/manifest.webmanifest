@@ -1,0 +1,55 @@
+{
+  "name": "MGC Language Lab",
+  "short_name": "MGC Languages",
+  "description": "Корпоративное изучение английского и китайского языка для работы в автопроме.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f8fbfe",
+  "theme_color": "#f8fbfe",
+  "lang": "ru",
+  "dir": "ltr",
+  "categories": ["education", "productivity"],
+  "launch_handler": {"client_mode": "navigate-existing"},
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Игры и симуляторы",
+      "short_name": "Игры",
+      "description": "Открыть автомобильные игры и Factory Simulator",
+      "url": "/?view=games",
+      "icons": [{"src": "/icons/app-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+    },
+    {
+      "name": "Темы",
+      "short_name": "Темы",
+      "description": "Открыть автомобильную лексику и темы",
+      "url": "/?view=topics",
+      "icons": [{"src": "/icons/app-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+    },
+    {
+      "name": "Сценарии",
+      "short_name": "Сценарии",
+      "description": "Открыть рабочие производственные сценарии",
+      "url": "/?view=roleplay",
+      "icons": [{"src": "/icons/app-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+    }
+  ],
+  "icons": [
+    {
+      "src": "/icons/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/app-icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

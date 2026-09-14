@@ -1,0 +1,165 @@
+from __future__ import annotations
+
+import os
+import re
+import subprocess
+import sys
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+INDEX = (ROOT / 'static/index.html').read_text(encoding='utf-8')
+HOME = (ROOT / 'static/frontend/pilot_home.js').read_text(encoding='utf-8')
+NAV = (ROOT / 'static/frontend/navigation.js').read_text(encoding='utf-8')
+BOOT = (ROOT / 'static/frontend/boot.js').read_text(encoding='utf-8')
+UX = (ROOT / 'static/frontend/pilot_ux_hardening.js').read_text(encoding='utf-8')
+CSS = (ROOT / 'static/pilot.css').read_text(encoding='utf-8')
+OVERRIDES = (ROOT / 'static/pilot_overrides.css').read_text(encoding='utf-8')
+PRACTICE_GAMES = (ROOT / 'mgc/services/practice_games.py').read_text(encoding='utf-8')
+RUNBOOK = (ROOT / 'docs/COMPANY_PILOT_RUNBOOK_v6.0.17.md').read_text(encoding='utf-8')
+UAT = (ROOT / 'docs/PILOT_UAT_v6.0.17.md').read_text(encoding='utf-8')
+ENV = (ROOT / '.env.company-pilot.example').read_text(encoding='utf-8')
+ONE_CLICK = (ROOT / 'docs/ONE_CLICK_START_v6.0.17.md').read_text(encoding='utf-8')
+BAT = (ROOT / 'START_COMPANY_PILOT.bat').read_text(encoding='utf-8')
+PS1 = (ROOT / 'scripts/start_company_pilot.ps1').read_text(encoding='utf-8')
+LAN_PS1 = (ROOT / 'scripts/start_lan_windows.ps1').read_text(encoding='utf-8')
+SYNC_ADMIN = ROOT / 'scripts/sync_admin_credentials.py'
+
+# Pilot home is loaded before legacy learning so its capture-phase Home ownership wins.
+assert INDEX.index('/frontend/pilot_home.js') < INDEX.index('/frontend/learning.js')
+assert INDEX.index('/frontend/learning.js') < INDEX.index('/frontend/navigation.js')
+assert INDEX.index('/frontend/pilot_ux_hardening.js') < INDEX.index('/frontend/boot.js')
+assert '/pilot.css' in INDEX
+assert '/pilot_overrides.css' in INDEX
+assert "frontend.register('pilot-home'" in HOME
+assert "String(view || '') === 'home'" in HOME
+assert "frontend.get('pilot-home').owns(view)" in NAV
+assert NAV.index("frontend.get('pilot-home')") < NAV.index("frontend.get('learning')")
+assert "'pilot-home'" in BOOT
+
+# Approved bilingual pilot behavior.
+for token in (
+    'Китайский язык для автопрома',
+    'English for the automotive industry',
+    'Фраза дня',
+    'План на сегодня',
+    'Быстрый доступ',
+    'Подборка терминов',
+    'Информация о китайском',
+):
+    assert token in HOME or token in INDEX, token
+assert 'About English' not in INDEX
+assert 'Pilot · Wave' not in HOME
+assert 'Сценарий смены' not in HOME
+assert 'Новая сегодня' not in HOME
+assert 'обновляются ежедневно' not in HOME
+
+# Homepage quote grammar regression guard: source remains valid even though decorative quote cards are hidden in the pilot UI.
+assert 'Большие цели начинаются с маленьких слов.' in HOME
+assert 'Большее цели' not in HOME
+
+# Pilot UX review hardening.
+for selector in ('.pilot-next-head blockquote', '.pilot-hero-quote', '.pilot-hero-message', '.pilot-quote-card'):
+    assert selector in OVERRIDES, selector
+assert '整车装配' in UX
+assert 'zhěng chē zhuāng pèi' in UX
+for token in ('natural|neural|online|premium', 'xiaoxiao', 'samantha', 'speechSynthesis'):
+    assert token in UX, token
+assert 'MAX_GAME_ANSWERS = 5' in PRACTICE_GAMES
+assert PRACTICE_GAMES.count('min(MAX_GAME_ANSWERS') >= 2
+for name in ('assembly.svg', 'welding.svg', 'paint.svg', 'stamping.svg', 'quality.svg', 'logistics.svg'):
+    path = ROOT / 'static' / 'pilot' / 'topics' / name
+    assert path.exists(), path
+    ET.parse(path)
+    assert f"/pilot/topics/{name}" in OVERRIDES
+
+# Daily phrase is deterministic per calendar day and refreshes after midnight.
+for token in (
+    'function dayNumber(date)',
+    'function dailyPhrase(language, date)',
+    'Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())',
+    'function scheduleMidnightRefresh()',
+    'new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1',
+):
+    assert token in HOME, token
+assert HOME.count("['") >= 32, 'expected bilingual curated phrase pools'
+for i in range(1, 8):
+    assert f"/pilot/phrase-' + ((index % 7" in HOME if i == 1 else True
+    path = ROOT / 'static' / 'pilot' / f'phrase-{i}.svg'
+    assert path.exists(), path
+    ET.parse(path)
+for name in ('hero-chinese.svg', 'hero-english.svg'):
+    path = ROOT / 'static' / 'pilot' / name
+    assert path.exists(), path
+    ET.parse(path)
+    art = path.read_text(encoding='utf-8')
+    assert 'x="890"' not in art and 'x="894"' not in art
+
+# Sidebar follows approved pilot information architecture: notifications stay in top/right UI, not left nav.
+assert 'data-view="notifications"' in INDEX
+sidebar = INDEX[INDEX.index('<aside id="sidebar"'):INDEX.index('</aside>')]
+assert 'data-view="notifications"' not in sidebar
+assert 'Информация о китайском' in sidebar
+
+# Company launch gate is secure-by-default template + executable preflight/runbook/UAT.
+for token in (
+    'AUTH_MODE=oidc', 'REGISTRATION_ENABLED=false', 'COOKIE_SECURE=true',
+    'READY_REQUIRE_OIDC=true', 'READY_REQUIRE_SECURE_COOKIE=true',
+    'READY_REQUIRE_RLS=true', 'READY_REQUIRE_TERM_APPROVAL=true',
+):
+    assert token in ENV, token
+for token in ('GO / GO WITH ACTIONS / NO-GO', 'no open S1/S2', 'company_pilot_preflight.py'):
+    assert token.lower() in (RUNBOOK + UAT).lower(), token
+
+# One-click Windows startup keeps strict corporate security when real SSO exists,
+# but must remain runnable as a clearly labelled local/LAN pilot before IT issues OIDC credentials.
+for path in (
+    ROOT / 'START_COMPANY_PILOT.bat',
+    ROOT / 'scripts/start_company_pilot.ps1',
+    ROOT / 'scripts/start_lan_windows.ps1',
+    ROOT / 'docs/ONE_CLICK_START_v6.0.17.md',
+):
+    assert path.exists(), path
+assert 'start_company_pilot.ps1' in BAT
+assert 'git pull --ff-only origin main' in BAT
+for token in (
+    'docker info',
+    'docker compose version',
+    'company_pilot_preflight.py',
+    '--strict-corporate',
+    'docker-compose.pilot.yml',
+    ' build',
+    ' up -d',
+    '/health/ready',
+    'Start-Process',
+    'OIDC_CLIENT_ID',
+    'OIDC_CLIENT_SECRET',
+    'Test-Placeholder',
+    'Ensure-Secret',
+    'New-Secret',
+    'start_lan_windows.ps1',
+    '[LOCAL PILOT]',
+):
+    assert token in PS1, token
+for token in ('POSTGRES_PASSWORD', 'OIDC_STATE_SECRET', 'METRICS_TOKEN', 'New-Secret'):
+    assert token in LAN_PS1, token
+LAN_PS1.encode('ascii')
+assert 'down -v' not in PS1.lower()
+assert 'one double-click' in ONE_CLICK.lower()
+
+for script in ('pilot_home.js', 'navigation.js', 'boot.js', 'pilot_ux_hardening.js'):
+    subprocess.run(['node', '--check', str(ROOT / 'static/frontend' / script)], check=True, cwd=ROOT)
+subprocess.run([sys.executable, '-m', 'py_compile', str(ROOT / 'scripts/company_pilot_preflight.py')], check=True, cwd=ROOT)
+subprocess.run([sys.executable, '-m', 'py_compile', str(ROOT / 'mgc/services/practice_games.py')], check=True, cwd=ROOT)
+
+# Container entrypoint executes the bootstrap as a file under scripts/. That execution
+# mode must still be able to import the repository-local mgc package before touching DB.
+bootstrap_env = os.environ.copy()
+bootstrap_env['MGC_ADMIN_SYNC_CREDENTIALS'] = 'false'
+subprocess.run([sys.executable, str(SYNC_ADMIN)], check=True, cwd=ROOT, env=bootstrap_env)
+
+# Visual system has responsive company-pilot layouts.
+for token in ('.pilot-dashboard', '.pilot-hero-chinese', '.pilot-hero-english', '.pilot-next-grid', '@media(max-width:820px)'):
+    assert token in CSS, token
+
+print('PASS: v6.0.17 company pilot candidate has approved bilingual UI, UX hardening, SSO-aware one-click startup and GO/NO-GO operations gate')

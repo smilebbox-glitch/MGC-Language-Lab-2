@@ -1,0 +1,43 @@
+# Runtime configuration / secrets
+.env
+.env.*
+!.env.example
+!.env.pilot.example
+!.env.lan.example
+!.env.vm.example
+
+# Server TLS material must stay local to the deployment host.
+deploy/tls/*
+!deploy/tls/README.md
+deploy/vm/runtime/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Runtime data
+*.db
+*.sqlite
+*.sqlite3
+backups/
+restore-work/
+tts-cache/
+*.wav
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Local artifacts
+*.log
+*.pid
+*.tmp
+*.bak
+*.zip
