@@ -105,31 +105,42 @@ jobs:
           MGC_ADMIN_PASSWORD=ci-lan-admin-password-0123456789
           EOF
 
-          docker compose --env-file .env.ci-lan -f docker-compose.lan.yml down -v --remove-orphans || true
-          docker compose --env-file .env.ci-lan -f docker-compose.lan.yml up -d db
+          compose=(docker compose --env-file .env.ci-lan -f docker-compose.lan.yml)
+          "${compose[@]}" down -v --remove-orphans || true
+          "${compose[@]}" up -d db
 
           for i in $(seq 1 45); do
-            if docker compose --env-file .env.ci-lan -f docker-compose.lan.yml exec -T db pg_isready -U mgc_languages -d mgc_languages >/dev/null 2>&1; then
+            if "${compose[@]}" exec -T db pg_isready -U mgc_languages -d mgc_languages >/dev/null 2>&1; then
               break
             fi
             sleep 2
           done
-          docker compose --env-file .env.ci-lan -f docker-compose.lan.yml exec -T db pg_isready -U mgc_languages -d mgc_languages
-          docker compose --env-file .env.ci-lan -f docker-compose.lan.yml exec -T db psql -U mgc_languages -d mgc_languages -v ON_ERROR_STOP=1 -c "CREATE TABLE IF NOT EXISTS password_recovery_probe (id integer primary key, note text not null); INSERT INTO password_recovery_probe (id, note) VALUES (1, 'keep-me') ON CONFLICT (id) DO UPDATE SET note = EXCLUDED.note;"
+          "${compose[@]}" exec -T db pg_isready -U mgc_languages -d mgc_languages
+          "${compose[@]}" exec -T db psql -U mgc_languages -d mgc_languages -v ON_ERROR_STOP=1 -c "CREATE TABLE IF NOT EXISTS password_recovery_probe (id integer primary key, note text not null); INSERT INTO password_recovery_probe (id, note) VALUES (1, 'keep-me') ON CONFLICT (id) DO UPDATE SET note = EXCLUDED.note;"
 
-          sed -i 's/ci-old-db-password-0123456789/ci-new-db-password-9876543210/' .env.ci-lan
+          network="mgc-languages-lan_backend"
+          old_pass='ci-old-db-password-0123456789'
+          new_pass='ci-new-db-password-9876543210'
 
-          if docker compose --env-file .env.ci-lan -f docker-compose.lan.yml exec -T -e PGPASSWORD=ci-new-db-password-9876543210 db psql -h 127.0.0.1 -U mgc_languages -d mgc_languages -tAc 'SELECT 1' >/dev/null 2>&1; then
-            echo 'Expected new password to fail before reconciliation' >&2
+          docker run --rm --network "$network" -e "PGPASSWORD=$old_pass" postgres:16.4-alpine \
+            psql -h db -U mgc_languages -d mgc_languages -tAc 'SELECT 1' | grep -q '^1$'
+
+          sed -i "s/$old_pass/$new_pass/" .env.ci-lan
+
+          if docker run --rm --network "$network" -e "PGPASSWORD=$new_pass" postgres:16.4-alpine \
+            psql -h db -U mgc_languages -d mgc_languages -tAc 'SELECT 1' >/dev/null 2>&1; then
+            echo 'Expected new password to fail over the Docker network before reconciliation' >&2
             exit 1
           fi
 
           pwsh -NoProfile -File scripts/repair_lan_db_password.ps1 -EnvFile .env.ci-lan -ComposeFile docker-compose.lan.yml
 
-          docker compose --env-file .env.ci-lan -f docker-compose.lan.yml exec -T -e PGPASSWORD=ci-new-db-password-9876543210 db psql -h 127.0.0.1 -U mgc_languages -d mgc_languages -tAc "SELECT note FROM password_recovery_probe WHERE id=1" | grep -q 'keep-me'
+          docker run --rm --network "$network" -e "PGPASSWORD=$new_pass" postgres:16.4-alpine \
+            psql -h db -U mgc_languages -d mgc_languages -tAc "SELECT note FROM password_recovery_probe WHERE id=1" | grep -q '^keep-me$'
 
-          if docker compose --env-file .env.ci-lan -f docker-compose.lan.yml exec -T -e PGPASSWORD=ci-old-db-password-0123456789 db psql -h 127.0.0.1 -U mgc_languages -d mgc_languages -tAc 'SELECT 1' >/dev/null 2>&1; then
-            echo 'Old password still authenticates after reconciliation' >&2
+          if docker run --rm --network "$network" -e "PGPASSWORD=$old_pass" postgres:16.4-alpine \
+            psql -h db -U mgc_languages -d mgc_languages -tAc 'SELECT 1' >/dev/null 2>&1; then
+            echo 'Old password still authenticates over the Docker network after reconciliation' >&2
             exit 1
           fi
 
