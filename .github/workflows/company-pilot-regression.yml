@@ -1,0 +1,100 @@
+name: MGC Language Lab 2 Company Pilot Regression
+
+on:
+  push:
+    branches:
+      - main
+      - fix/company-pilot-env-template
+    paths:
+      - .env.company-pilot.example
+      - scripts/start_company_pilot.ps1
+      - scripts/company_pilot_preflight.py
+      - docker-compose.pilot.yml
+      - static/index.html
+      - static/frontend/navigation.js
+      - static/frontend/premium_home_v631.js
+      - static/premium_home_v631.css
+      - tests/test_mgc_language_lab_2_premium.py
+      - .github/workflows/company-pilot-regression.yml
+  pull_request:
+    paths:
+      - .env.company-pilot.example
+      - scripts/start_company_pilot.ps1
+      - scripts/company_pilot_preflight.py
+      - docker-compose.pilot.yml
+      - static/index.html
+      - static/frontend/navigation.js
+      - static/frontend/premium_home_v631.js
+      - static/premium_home_v631.css
+      - tests/test_mgc_language_lab_2_premium.py
+      - .github/workflows/company-pilot-regression.yml
+  workflow_dispatch:
+
+jobs:
+  company-pilot-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Require company pilot template
+        run: test -f .env.company-pilot.example
+
+      - name: Validate secure template contract
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('.env.company-pilot.example').read_text(encoding='utf-8')
+          required = [
+              'APP_VERSION=6.0.31',
+              'AUTH_MODE=oidc',
+              'REGISTRATION_ENABLED=false',
+              'COOKIE_SECURE=true',
+              'READY_REQUIRE_OIDC=true',
+              'READY_REQUIRE_SECURE_COOKIE=true',
+              'READY_REQUIRE_SCHEMA_HEAD=true',
+              'READY_REQUIRE_RLS=true',
+              'READY_REQUIRE_TERM_APPROVAL=true',
+              'RLS_ENABLED=true',
+              'TERM_APPROVAL_REQUIRED=true',
+          ]
+          for token in required:
+              assert token in text, token
+          for key in ('POSTGRES_PASSWORD', 'OIDC_STATE_SECRET', 'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET', 'METRICS_TOKEN'):
+              line = next((line for line in text.splitlines() if line.startswith(key + '=')), '')
+              assert 'CHANGE_ME' in line, f'{key} must remain a placeholder in the tracked example'
+          print('PASS: secure company pilot example contract')
+          PY
+
+      - name: Verify premium design remains canonical
+        run: python tests/test_mgc_language_lab_2_premium.py
+
+      - name: Exercise company preflight with disposable values
+        shell: bash
+        run: |
+          cp .env.company-pilot.example .env.ci-company-pilot
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.env.ci-company-pilot')
+          text = path.read_text(encoding='utf-8')
+          replacements = {
+              'POSTGRES_PASSWORD=CHANGE_ME_STRONG_DB_PASSWORD': 'POSTGRES_PASSWORD=ci-db-secret-0123456789abcdef',
+              'OIDC_STATE_SECRET=CHANGE_ME_RANDOM_32_BYTES_OR_MORE': 'OIDC_STATE_SECRET=ci-state-secret-0123456789abcdef0123456789abcdef',
+              'METRICS_TOKEN=CHANGE_ME_RANDOM_METRICS_TOKEN': 'METRICS_TOKEN=ci-metrics-secret-0123456789abcdef',
+          }
+          for old, new in replacements.items():
+              assert old in text, old
+              text = text.replace(old, new)
+          path.write_text(text, encoding='utf-8')
+          PY
+          python scripts/company_pilot_preflight.py --env-file .env.ci-company-pilot --json
+
+      - name: Validate pilot compose model
+        run: docker compose --env-file .env.ci-company-pilot -f docker-compose.pilot.yml config --quiet
+
+      - name: Validate premium navigation syntax
+        run: node --check static/frontend/navigation.js && node --check static/frontend/premium_home_v631.js
