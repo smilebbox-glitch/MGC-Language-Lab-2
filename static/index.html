@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f8fbfe">
+  <meta name="application-name" content="MGC Language Lab">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="MGC Language Lab">
+  <meta name="format-detection" content="telephone=no">
+  <title>MGC Language Lab</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/app-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/app-icon.svg">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/pilot.css">
+  <link rel="stylesheet" href="/pilot_overrides.css">
+  <link rel="stylesheet" href="/ux_performance_v628.css">
+  <link rel="stylesheet" href="/mobile_experience_v631.css">
+  <link rel="stylesheet" href="/pilot_simplified_v631.css">
+  <link rel="stylesheet" href="/premium_home_v631.css">
+</head>
+<body>
+  <a class="v628-skip-link" href="#main">Перейти к основному содержимому</a>
+  <section id="authView" class="auth-shell">
+    <div class="auth-brand">
+      <div class="brand-mark">M</div>
+      <div>
+        <div class="eyebrow">MGC CORPORATE LEARNING</div>
+        <h1>MGC Language Lab</h1>
+        <p>Английский и китайский язык для работы в автопроме</p>
+      </div>
+    </div>
+    <div class="auth-card">
+      <button id="oidcLogin" class="primary wide hidden" type="button">Войти через корпоративный SSO</button>
+      <div id="authTabs" class="auth-tabs" role="tablist">
+        <button class="auth-tab active" data-auth-mode="login">Вход</button>
+        <button class="auth-tab" data-auth-mode="register">Регистрация</button>
+      </div>
+      <form id="authForm">
+        <label id="displayNameWrap" class="hidden">Имя и фамилия
+          <input id="displayName" autocomplete="name" placeholder="Например: Иван Иванов">
+        </label>
+        <label>Логин
+          <input id="username" autocomplete="username" required minlength="3" placeholder="Например: ivan.ivanov">
+        </label>
+        <label>Отдел
+          <select id="department" required autocomplete="organization-title">
+            <option value="" selected disabled>Выберите отдел</option>
+            <option value="R&D">R&D</option>
+            <option value="Производство">Производство</option>
+            <option value="Сборка">Сборка</option>
+            <option value="Сварка">Сварка</option>
+            <option value="Окраска">Окраска</option>
+            <option value="Штамповка">Штамповка</option>
+            <option value="Компоненты">Компоненты</option>
+            <option value="Качество">Качество</option>
+            <option value="Логистика">Логистика</option>
+            <option value="Закупки">Закупки</option>
+            <option value="Финансы">Финансы</option>
+            <option value="IT">IT</option>
+            <option value="HR">HR</option>
+            <option value="Администрация">Администрация</option>
+            <option value="Другое">Другое</option>
+          </select>
+        </label>
+        <label>Пароль
+          <input id="password" type="password" autocomplete="current-password" required minlength="6" placeholder="Не менее 6 символов">
+        </label>
+        <button id="authSubmit" class="primary wide" type="submit">Войти</button>
+        <p id="authMessage" class="form-message" aria-live="polite"></p>
+      </form>
+      <p class="muted auth-help">Для пилота каждый сотрудник использует свой аккаунт. Отдел и роль ограничивают доступ к управленческим данным.</p>
+    </div>
+  </section>
+
+  <div id="appView" class="app-shell hidden">
+    <header class="topbar">
+      <button id="menuToggle" class="icon-button menu-toggle" aria-label="Открыть меню" aria-controls="sidebar" aria-expanded="false">☰</button>
+      <button class="brand-button" data-view="home">
+        <span class="brand-mark small">M</span>
+        <span><b>MGC Language Lab</b><small>People · Languages · Automotive</small></span>
+      </button>
+      <div class="language-switch" role="group" aria-label="Изучаемый язык"><button data-language="chinese">Китайский язык · 中文</button><button data-language="english">English</button></div>
+      <button id="pinyinToggle" class="pinyin-toggle hidden" type="button" title="Показать или скрыть Pinyin">拼 Pinyin: вкл</button>
+      <button id="notificationButton" class="icon-button" data-view="notifications" title="Уведомления" aria-label="Уведомления">◌</button>
+      <div class="pilot-profile" aria-label="Профиль пользователя"><span class="pilot-profile-avatar">M</span><span class="pilot-profile-copy"><b id="userProfileName">Пользователь</b><small id="userProfileDept"></small></span></div>
+      <button id="logoutButton" class="icon-button" title="Выйти" aria-label="Выйти">↪</button>
+    </header>
+
+    <div class="workspace">
+      <aside id="sidebar" class="sidebar" role="navigation" aria-label="Основная навигация">
+        <div class="nav-group">
+          <button class="nav-item active" data-view="home"><span>⌂</span>Главная</button>
+          <button class="nav-item" data-view="topics"><span>▤</span>Темы</button>
+          <button class="nav-item" data-view="quiz"><span>✓</span>Тест</button>
+          <button class="nav-item" data-view="roleplay"><span>◉</span>Сценарии</button>
+          <button class="nav-item" data-view="course30"><span>30</span>Курс 30 дней</button>
+          <button class="nav-item" data-view="games"><span>◇</span>Игры</button>
+          <button class="nav-item" data-view="exam"><span>★</span>Итоговый экзамен</button>
+        </div>
+        <div class="nav-group"><button id="chineseBasicsNav" class="nav-item hidden" data-view="chinese-basics"><span>i</span>Информация о китайском</button></div>
+        <div id="managerNav" class="nav-group hidden"><button class="nav-item" data-view="manager"><span>♙</span>Руководитель</button></div>
+        <div id="adminNav" class="nav-group hidden"><button class="nav-item" data-view="admin"><span>⚙</span>Админ</button></div>
+      </aside>
+      <div id="backdrop" class="backdrop hidden"></div>
+      <main id="main" class="main" role="main" tabindex="-1"><div class="loading-card"><span class="spinner"></span><p>Загрузка платформы</p></div></main>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+  <script src="/frontend/runtime.js" defer></script>
+  <script src="/frontend/error_boundary.js" defer></script>
+  <script src="/app.js" defer></script>
+  <script src="/frontend/legacy_bridge.js" defer></script>
+  <script src="/frontend/service_status.js" defer></script>
+  <script src="/frontend/api_client.js" defer></script>
+  <script src="/frontend/app_state.js" defer></script>
+  <script src="/frontend/pilot_home.js" defer></script>
+  <script src="/frontend/premium_home_v631.js" defer></script>
+  <script src="/frontend/learning.js" defer></script>
+  <script src="/frontend/practice_games.js" defer></script>
+  <script src="/frontend/games_ui_fix_v631.js" defer></script>
+  <script src="/frontend/support_notifications.js" defer></script>
+  <script src="/frontend/final_assessment.js" defer></script>
+  <script src="/frontend/chinese_reference.js" defer></script>
+  <script src="/frontend/content_governance.js" defer></script>
+  <script src="/frontend/admin_ops.js" defer></script>
+  <script src="/frontend/admin_analytics.js" defer></script>
+  <script src="/frontend/manager_admin.js" defer></script>
+  <script src="/frontend/team_leaderboard_v626.js" defer></script>
+  <script src="/frontend/adaptive_training_v627.js" defer></script>
+  <script src="/frontend/legacy_retirement.js" defer></script>
+  <script src="/frontend/navigation.js" defer></script>
+  <script src="/frontend/session_lifecycle.js" defer></script>
+  <script src="/auth_department.js" defer></script>
+  <script src="/frontend/pilot_ux_hardening.js" defer></script>
+  <script src="/frontend/ux_performance_v628.js" defer></script>
+  <script src="/frontend/mobile_experience_v631.js" defer></script>
+  <script src="/pwa-register.js" defer></script>
+  <script src="/frontend/boot.js" defer></script>
+</body>
+</html>

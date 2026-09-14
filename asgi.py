@@ -1,0 +1,53 @@
+"""Stable ASGI entrypoint for deployment.
+
+v5.7.3-v5.7.9 established modular runtime, security, governance, learning,
+service and workflow boundaries. v5.8.0-v5.8.4 extracted system, observability,
+auth, learning and practice/game route ownership. v5.8.5-v5.8.9 continue
+terminology, pronunciation/TTS, user/manager and pilot-administration boundaries.
+v5.9.0-v5.9.1 move admin operations and notifications behind dedicated routers.
+v5.9.2 moves language summary, quiz and scenario-content HTTP ownership behind
+an authenticated language-content router while preserving content generation.
+v6.0.25 adds authenticated, user-scoped Shift Simulation history and analytics.
+v6.0.26 adds department-scoped manager analytics and timed Top-10 leaderboards.
+v6.0.27 adds a user-scoped adaptive training plan from games and Shift Reviews.
+"""
+
+from mgc_core.runtime import (
+    ADAPTIVE_TRAINING_ROUTER_BINDING_REPORT,
+    ADMIN_OPS_ROUTER_BINDING_REPORT,
+    AUTH_BINDING_REPORT,
+    AUTH_ROUTER_BINDING_REPORT,
+    CONTRACT_REPORT,
+    GOVERNANCE_BINDING_REPORT,
+    LANGUAGE_CONTENT_ROUTER_BINDING_REPORT,
+    LEARNING_BINDING_REPORT,
+    LEARNING_ROUTER_BINDING_REPORT,
+    NOTIFICATIONS_ROUTER_BINDING_REPORT,
+    OBSERVABILITY_ROUTER_BINDING_REPORT,
+    PILOT_ADMIN_ROUTER_BINDING_REPORT,
+    PRACTICE_GAMES_ROUTER_BINDING_REPORT,
+    PRONUNCIATION_ROUTER_BINDING_REPORT,
+    ROUTER_BINDING_REPORT,
+    SECURITY_BINDING_REPORT,
+    SERVICE_BINDING_REPORT,
+    SHIFT_ANALYTICS_ROUTER_BINDING_REPORT,
+    TEAM_ANALYTICS_ROUTER_BINDING_REPORT,
+    TERMINOLOGY_ADMIN_ROUTER_BINDING_REPORT,
+    TTS_BINDING_REPORT,
+    USER_MANAGER_ROUTER_BINDING_REPORT,
+    WORKFLOW_BINDING_REPORT,
+    app,
+)
+
+__all__ = [
+    "app", "CONTRACT_REPORT", "SECURITY_BINDING_REPORT", "GOVERNANCE_BINDING_REPORT",
+    "LEARNING_BINDING_REPORT", "SERVICE_BINDING_REPORT", "TTS_BINDING_REPORT", "ROUTER_BINDING_REPORT",
+    "OBSERVABILITY_ROUTER_BINDING_REPORT", "WORKFLOW_BINDING_REPORT", "AUTH_BINDING_REPORT",
+    "AUTH_ROUTER_BINDING_REPORT", "LEARNING_ROUTER_BINDING_REPORT", "PRACTICE_GAMES_ROUTER_BINDING_REPORT",
+    "SHIFT_ANALYTICS_ROUTER_BINDING_REPORT", "TEAM_ANALYTICS_ROUTER_BINDING_REPORT",
+    "ADAPTIVE_TRAINING_ROUTER_BINDING_REPORT",
+    "TERMINOLOGY_ADMIN_ROUTER_BINDING_REPORT", "PRONUNCIATION_ROUTER_BINDING_REPORT",
+    "USER_MANAGER_ROUTER_BINDING_REPORT", "PILOT_ADMIN_ROUTER_BINDING_REPORT",
+    "ADMIN_OPS_ROUTER_BINDING_REPORT", "NOTIFICATIONS_ROUTER_BINDING_REPORT",
+    "LANGUAGE_CONTENT_ROUTER_BINDING_REPORT",
+]

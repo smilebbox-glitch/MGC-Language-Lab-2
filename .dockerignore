@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+*.db
+*.sqlite*
+.env
+.env.*
+!.env.example
+!.env.pilot.example
+!.env.lan.example
+!.env.company-pilot.example
+.git/
+.idea/
+.vscode/
+runtime/
+backups/
+*.zip
+
+# Never copy deployment or CI TLS/private runtime material into application images.
+deploy/tls/
+deploy/vm/runtime/
+.ci-*/
+.ci-*.env
