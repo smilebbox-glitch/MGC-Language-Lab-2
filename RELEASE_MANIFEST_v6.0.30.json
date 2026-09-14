@@ -1,0 +1,249 @@
+{
+  "release": "6.0.30",
+  "status": "game-world-expansion",
+  "base_release": "6.0.29",
+  "freeze": false,
+  "scope": "Company Pilot",
+  "languages": ["chinese", "english"],
+  "vocabulary_terms_per_language": 2029,
+  "game_contract": {
+    "count": 20,
+    "max_answers_per_session": 5,
+    "anti_farm": "unchanged",
+    "game_types": [
+      "match", "listening", "mistake", "phrase", "hotspot",
+      "assembly_order", "shop_route", "tool_select", "defect_detective", "safety_spot",
+      "quality_gate", "logistics_route", "kanban", "bom_builder", "spec_check",
+      "rapid_recall", "memory_pairs", "odd_one_out", "dialogue_choice", "shift_incident"
+    ]
+  },
+  "game_world": {
+    "visual_only": true,
+    "scenes": ["factory", "assembly", "welding", "paint", "logistics", "quality", "engineering"],
+    "difficulty_labels": ["Базовый", "Средний", "Продвинутый"],
+    "assets": [
+      "static/game_world_v630.css",
+      "static/frontend/game_world_v630.js",
+      "static/game_world_stage_a_v630.css",
+      "static/frontend/game_world_stage_a_v630.js",
+      "static/game_world_stage_b_v630.css",
+      "static/frontend/game_world_stage_b_v630.js",
+      "static/game_world_stage_c_v630.css",
+      "static/frontend/game_world_stage_c_v630.js",
+      "static/game_world_stage_d_v630.css",
+      "static/frontend/game_world_stage_d_v630.js",
+      "static/frontend/game_world_stage_d_i18n_v630.js",
+      "static/factory_journey_v2_v630.css",
+      "static/frontend/factory_journey_v2_v630.js",
+      "static/frontend/game_chinese_localization_v630.js",
+      "static/frontend/chinese_learning_surface_v630.js",
+      "static/executive_visual_v630.css",
+      "static/executive_polish_v630.css"
+    ],
+    "reduced_motion": true,
+    "mobile_adaptive": true,
+    "stage_a": {
+      "scope": ["assembly", "welding", "paint", "logistics"],
+      "production_context_only": true,
+      "scoring_path": "unchanged",
+      "answer_controls": "canonical-game-lab",
+      "covered_games": [
+        "match", "listening", "phrase", "hotspot", "assembly_order", "tool_select",
+        "safety_spot", "shift_incident", "defect_detective", "shop_route", "logistics_route", "kanban"
+      ],
+      "visual_processes": [
+        "assembly-operation-flow",
+        "welding-robot-cell",
+        "paint-optical-inspection",
+        "intralogistics-material-flow"
+      ]
+    },
+    "stage_b": {
+      "scope": ["quality", "engineering"],
+      "production_context_only": true,
+      "scoring_path": "unchanged",
+      "answer_controls": "canonical-game-lab",
+      "covered_games": ["mistake", "quality_gate", "spec_check", "bom_builder", "odd_one_out"],
+      "visual_processes": [
+        "quality-cmm-tolerance-station",
+        "quality-disposition-pass-rework-hold",
+        "engineering-drawing-to-bom-digital-thread",
+        "engineering-subsystem-classification"
+      ]
+    },
+    "stage_c": {
+      "scope": ["all-20-games"],
+      "production_context_only": true,
+      "scoring_path": "unchanged",
+      "answer_controls": "canonical-game-lab",
+      "covered_games": [
+        "match", "listening", "mistake", "phrase", "hotspot",
+        "assembly_order", "shop_route", "tool_select", "defect_detective", "safety_spot",
+        "quality_gate", "logistics_route", "kanban", "bom_builder", "spec_check",
+        "rapid_recall", "memory_pairs", "odd_one_out", "dialogue_choice", "shift_incident"
+      ],
+      "experience_layers": [
+        "mission-briefing-onboarding",
+        "five-step-mission-rail",
+        "neutral-answer-recorded-transition",
+        "server-derived-mission-complete",
+        "mobile-touch-polish"
+      ],
+      "per_answer_correctness_before_finish": false,
+      "result_source": "canonical-server-finish"
+    },
+    "stage_d": {
+      "scope": ["all-20-games"],
+      "production_motion_only": true,
+      "scoring_path": "unchanged",
+      "answer_controls": "canonical-game-lab",
+      "covered_games": [
+        "match", "listening", "mistake", "phrase", "hotspot",
+        "assembly_order", "shop_route", "tool_select", "defect_detective", "safety_spot",
+        "quality_gate", "logistics_route", "kanban", "bom_builder", "spec_check",
+        "rapid_recall", "memory_pairs", "odd_one_out", "dialogue_choice", "shift_incident"
+      ],
+      "motion_families": ["assembly", "welding", "paint", "logistics", "quality", "engineering", "factory"],
+      "process_cycles": [
+        "part-install-and-torque-verify",
+        "robot-weld-sequence-and-safety-interlock",
+        "spray-pass-and-optical-film-scan",
+        "agv-material-route-and-kanban-replenishment",
+        "cmm-probe-and-tolerance-readout",
+        "drawing-to-bom-digital-thread",
+        "andon-takt-and-control-room-response"
+      ],
+      "interaction_feedback": "neutral-visual-process-cycle",
+      "per_answer_correctness_before_finish": false,
+      "chinese_process_labels": false,
+      "process_ui_language": "ru",
+      "learning_content_language_in_chinese_track": "zh-pinyin"
+    },
+    "stage_e": {
+      "scope": ["supplier", "logistics", "welding", "paint", "assembly", "quality", "engineering"],
+      "journey_orchestration_only": true,
+      "scoring_path": "unchanged",
+      "launch_path": "canonical-game-lab-startGame",
+      "progress_source": "canonical-game-engagement-progress",
+      "stage_count": 7,
+      "covered_games": ["dialogue_choice", "logistics_route", "shift_incident", "defect_detective", "tool_select", "spec_check", "bom_builder"],
+      "experience_layers": [
+        "shift-simulation-route",
+        "production-incident-briefings",
+        "digital-vehicle-build-progress",
+        "factory-twin-station-status",
+        "english-and-chinese-incident-copy"
+      ],
+      "per_answer_correctness_before_finish": false,
+      "chinese_incident_labels": true
+    },
+    "chinese_localization": {
+      "scope": ["all-20-games", "stage-a", "stage-b", "stage-c", "stage-d", "stage-e", "arcade-mastery", "xp", "quiz", "roleplay", "course30"],
+      "presentation_only": true,
+      "canonical_answer_values": "unchanged",
+      "scoring_path": "unchanged",
+      "ui_language": "ru",
+      "descriptions_and_hints_language": "ru",
+      "learning_content_language": "chinese+pinyin",
+      "pinyin_game_titles": false,
+      "pinyin_quiz_choices_when_chinese": true,
+      "targets": [
+        "russian-game-titles-and-descriptions",
+        "russian-xp-and-progress-ui",
+        "russian-quiz-controls",
+        "russian-roleplay-controls",
+        "russian-course30-controls",
+        "russian-game-and-mission-chrome",
+        "chinese-learning-content-with-pinyin",
+        "quiz-chinese-answer-pinyin",
+        "stage-e-factory-journey-incidents"
+      ]
+    }
+  },
+  "executive_visual_system": {
+    "presentation_only": true,
+    "asset": "static/executive_visual_v630.css",
+    "polish_asset": "static/executive_polish_v630.css",
+    "load_order": "after-product-module-styles",
+    "polish_load_order": "after-executive-visual",
+    "surfaces": [
+      "authentication", "topbar", "sidebar", "home-dashboard", "topics", "terms", "quiz",
+      "automotive-arcade", "arcade-mastery", "xp", "factory-journey-v2"
+    ],
+    "polish_surfaces": [
+      "home-cinematic-hero", "learning-card-depth", "game-card-identity", "active-game-stage",
+      "arcade-mastery-kpis", "factory-journey-showpiece", "mobile-executive-polish"
+    ],
+    "design_language": ["automotive-navy", "industrial-blue-cyan", "glass-surfaces", "premium-depth", "executive-spacing"],
+    "reduced_motion": true,
+    "mobile_adaptive": true,
+    "runtime_js": false,
+    "api_contract": "unchanged",
+    "xp_scoring": "unchanged",
+    "database": "unchanged"
+  },
+  "learning_content_projection": {
+    "raw_terms_per_language_unchanged": 2029,
+    "one_visible_term_one_level": true,
+    "duplicate_key": "normalized-visible-term",
+    "canonical_level_policy": "lowest-existing-level-A1-to-C1",
+    "duplicate_row_policy": "richest-row-within-canonical-level",
+    "stable_raw_ids_preserved": true,
+    "applies_to": ["topics", "terms", "quiz", "course30", "final-exam", "games", "assistant", "review"]
+  },
+  "frontend_modules": [
+    "error-boundary", "legacy-app", "service-status", "api-client", "app-state",
+    "pilot-home", "learning", "game-lab-v618", "game-engagement-v618",
+    "factory-journey-v619", "arcade-missions-v620", "arcade-mastery-v620",
+    "game-depth-v621", "decision-chains-v622", "dynamic-factory-v623",
+    "shift-simulation-v624", "shift-analytics-v625", "practice-games",
+    "support-notifications", "assistant-knowledge", "final-assessment",
+    "chinese-reference", "content-governance", "admin-ops", "admin-analytics",
+    "manager-admin", "team-leaderboard-v626", "adaptive-training-v627",
+    "legacy-retirement", "navigation", "session-lifecycle", "auth-department",
+    "pilot-ux-hardening", "ux-performance-v628"
+  ],
+  "deployment_contract": {
+    "compose_files": ["docker-compose.lan.yml", "docker-compose.pilot.yml"],
+    "environment_templates": [".env.lan.example", ".env.company-pilot.example"],
+    "health_endpoints": ["/health/live", "/health/ready", "/api/meta"],
+    "database": "PostgreSQL",
+    "reverse_proxy": "Nginx",
+    "one_click_windows": "START_COMPANY_PILOT.bat"
+  },
+  "invariants": {
+    "database_migrations": "none",
+    "xp_paths": "unchanged",
+    "game_scoring": "unchanged",
+    "api_contract": "unchanged",
+    "pwa_private_cache_isolation": "preserved"
+  },
+  "critical_files": [
+    "static/index.html",
+    "static/frontend/boot.js",
+    "static/frontend/game_lab_v618.js",
+    "static/frontend/practice_games.js",
+    "static/game_world_v630.css",
+    "static/frontend/game_world_v630.js",
+    "static/game_world_stage_a_v630.css",
+    "static/frontend/game_world_stage_a_v630.js",
+    "static/game_world_stage_b_v630.css",
+    "static/frontend/game_world_stage_b_v630.js",
+    "static/game_world_stage_c_v630.css",
+    "static/frontend/game_world_stage_c_v630.js",
+    "static/game_world_stage_d_v630.css",
+    "static/frontend/game_world_stage_d_v630.js",
+    "static/frontend/game_world_stage_d_i18n_v630.js",
+    "static/factory_journey_v2_v630.css",
+    "static/frontend/factory_journey_v2_v630.js",
+    "static/frontend/game_chinese_localization_v630.js",
+    "static/frontend/chinese_learning_surface_v630.js",
+    "static/executive_visual_v630.css",
+    "static/executive_polish_v630.css",
+    "static/service-worker.js",
+    "static/pwa-register.js",
+    "mgc/services/practice_games.py",
+    "docker-compose.lan.yml",
+    "docker-compose.pilot.yml"
+  ]
+}

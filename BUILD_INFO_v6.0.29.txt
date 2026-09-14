@@ -1,0 +1,31 @@
+MGC Languages
+Release: v6.0.29
+Candidate: RC1
+Codename: Release Candidate / Pilot Freeze
+Status: Company Pilot freeze
+Base: v6.0.28
+
+Frozen product contract:
+- 2029 Chinese terms
+- 2029 English terms
+- 20 Automotive Arcade game types
+- max 5 backend answers per game session
+- anti-farm unchanged
+- frontend requiredModules frozen by RELEASE_MANIFEST_v6.0.29.json
+- no new runtime frontend layer
+- no new database migration
+- no new XP path
+- no feature addition after RC without explicit unfreeze
+
+Runtime version contract:
+- mgc.config APP_VERSION default = 6.0.29
+- /api/meta must report version 6.0.29 in the real LAN Docker stack
+
+Release controls:
+- scripts/release_candidate_guard.py
+- tests/v629_release_candidate_test.py
+- tests/v629_operability_smoke_test.py
+- .github/workflows/ci-v629-release-candidate.yml
+- Company Pilot Gate
+- Main CI + LAN PostgreSQL/Nginx smoke
+- HTTP smoke: live/ready/meta, root shell, critical frontend assets, protected API authorization

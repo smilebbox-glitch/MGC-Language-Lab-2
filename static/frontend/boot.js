@@ -1,0 +1,64 @@
+/* v6.0.31: lightweight Company Pilot boot contract.
+ * Only modules exposed by the simplified language-learning pilot are required.
+ * Experimental Game World, 3D, executive presentation and AI-assistant layers
+ * are intentionally not loaded by static/index.html.
+ */
+(function () {
+  'use strict';
+
+  const frontend = window.MGCFrontend;
+  if (!frontend) throw new Error('MGCFrontend runtime is missing');
+
+  try {
+    const requiredModules = [
+      'error-boundary',
+      'legacy-app',
+      'service-status',
+      'api-client',
+      'app-state',
+      'pilot-home',
+      'learning',
+      'practice-games',
+      'support-notifications',
+      'final-assessment',
+      'chinese-reference',
+      'content-governance',
+      'admin-ops',
+      'admin-analytics',
+      'manager-admin',
+      'team-leaderboard-v626',
+      'adaptive-training-v627',
+      'legacy-retirement',
+      'navigation',
+      'session-lifecycle',
+      'auth-department',
+      'pilot-ux-hardening',
+      'ux-performance-v628'
+    ];
+    const missingModules = requiredModules.filter(function (name) { return !frontend.has(name); });
+    if (missingModules.length) throw new Error('Frontend modules missing: ' + missingModules.join(', '));
+
+    const requiredDomIds = [
+      'authView', 'authForm', 'username', 'department', 'password',
+      'appView', 'main', 'sidebar', 'logoutButton', 'toast'
+    ];
+    const missingDom = requiredDomIds.filter(function (id) { return !document.getElementById(id); });
+    if (missingDom.length) throw new Error('Frontend DOM contract missing: ' + missingDom.join(', '));
+
+    frontend.markReady();
+    frontend.get('error-boundary').reconcile();
+    document.dispatchEvent(new CustomEvent('mgc:frontend-ready', {
+      detail: {version: frontend.version, modules: frontend.list(), pilotCandidate: 'v6.0.31'}
+    }));
+  } catch (error) {
+    const message = frontend.fail(error);
+    const main = document.getElementById('main');
+    if (main) {
+      main.innerHTML = '<div class="card"><h2>Не удалось загрузить интерфейс</h2><p>' +
+        String(message).replace(/[&<>"']/g, function (char) {
+          return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char];
+        }) + '</p></div>';
+    }
+    throw error;
+  }
+})();

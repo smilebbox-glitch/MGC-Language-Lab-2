@@ -1,0 +1,35 @@
+services:
+  db:
+    mem_limit: ${MGC_DB_MEMORY_LIMIT:-768m}
+    cpus: ${MGC_DB_CPU_LIMIT:-0.75}
+
+  app:
+    environment:
+      TTS_ENABLED: "false"
+      TTS_DISK_CACHE_ENABLED: "false"
+      TTS_LEGACY_GET_ENABLED: "false"
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-1}
+      UVICORN_LIMIT_CONCURRENCY: ${UVICORN_LIMIT_CONCURRENCY:-100}
+      UVICORN_BACKLOG: ${UVICORN_BACKLOG:-512}
+    mem_limit: ${MGC_APP_MEMORY_LIMIT:-1024m}
+    cpus: ${MGC_APP_CPU_LIMIT:-1.50}
+
+  nginx:
+    # The LAN base profile already applies no-new-privileges. The VM override
+    # must not repeat that list item because Compose merges sequence values.
+    # Keep the exposed gateway immutable and return only the capabilities
+    # needed by the stock nginx master process to prepare cache directories
+    # and drop to its worker user.
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:rw,noexec,nosuid,size=16m
+      - /var/run:rw,noexec,nosuid,size=1m
+      - /tmp:rw,noexec,nosuid,size=8m
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    mem_limit: ${MGC_NGINX_MEMORY_LIMIT:-128m}
+    cpus: ${MGC_NGINX_CPU_LIMIT:-0.20}
