@@ -11,10 +11,10 @@ def test_lan_launcher_repairs_persistent_database_password_before_app_start() ->
     assert REPAIR.is_file(), "missing LAN database password reconciliation helper"
     helper = REPAIR.read_text(encoding="utf-8")
 
-    assert "docker compose" in helper.lower()
-    assert "up -d db" in helper.lower()
-    assert "alter role" in helper.lower()
-    assert "psql" in helper.lower()
+    assert '@("compose", "--env-file", $EnvPath, "-f", $ComposePath)' in helper
+    assert "& docker @ComposeArgs up -d db" in helper
+    assert "ALTER ROLE" in helper
+    assert "psql" in helper
     assert "POSTGRES_PASSWORD" in helper
     assert "POSTGRES_USER" in helper
 
