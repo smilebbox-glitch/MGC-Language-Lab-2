@@ -22,17 +22,17 @@
   }
 
   function syncHomeChrome(view) {
-  if (!document.body) return;
-  document.body.classList.toggle('v631-premium-home-active', String(view || 'home') === 'home');
-}
+    if (!document.body) return;
+    document.body.classList.toggle('v631-premium-home-active', String(view || 'home') === 'home');
+  }
 
   function setView(view) {
     view = String(view || 'home');
     syncHomeChrome(view);
 
     if (frontend.has('premium-home') && frontend.get('premium-home').owns(view)) {
-  return frontend.get('premium-home').navigate(view);
-}
+      return frontend.get('premium-home').navigate(view);
+    }
     if (frontend.has('pilot-home') && frontend.get('pilot-home').owns(view)) {
       return frontend.get('pilot-home').navigate(view);
     }
@@ -87,9 +87,9 @@
     loadLanguage: function () { return legacy().loadLanguage(); },
     showApp: function () { return legacy().showApp(); },
     showAuth: function () {
-  syncHomeChrome('auth');
-  return legacy().showAuth();
-},
+      syncHomeChrome('auth');
+      return legacy().showAuth();
+    },
     enterUserSession: async function (user) {
       const state = frontend.get('app-state');
       state.patch({
