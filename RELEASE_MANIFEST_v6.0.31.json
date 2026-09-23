@@ -9,8 +9,8 @@
   "pilot_ui": {
     "learner_navigation": ["home", "topics", "quiz", "roleplay", "course30", "games", "exam"],
     "chinese_reference": true,
-    "presentation_exposed": false,
-    "three_d_exposed": false,
+    "presentation_exposed": true,
+    "three_d_exposed": true,
     "xp_navigation_exposed": false,
     "assistant_navigation_exposed": false,
     "course30_activity_exposed": false,
@@ -52,10 +52,6 @@
   "not_loaded_by_pilot_index": [
     "static/executive_visual_v630.css",
     "static/executive_polish_v630.css",
-    "static/art_direction_v630.css",
-    "static/digital_vehicle_3d_v630.css",
-    "static/frontend/art_direction_v630.js",
-    "static/frontend/digital_vehicle_3d_v630.js",
     "static/frontend/digital_truck_3d_v630.js",
     "static/frontend/game_lab_v618.js",
     "static/frontend/game_engagement_v618.js",

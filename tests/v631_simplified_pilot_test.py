@@ -17,8 +17,8 @@ def test_release_identity_and_scope() -> None:
     assert manifest["release"] == "6.0.31"
     assert manifest["status"] == "pilot-ui-simplification"
     assert manifest["base_release"] == "6.0.30"
-    assert manifest["pilot_ui"]["presentation_exposed"] is False
-    assert manifest["pilot_ui"]["three_d_exposed"] is False
+    assert manifest["pilot_ui"]["presentation_exposed"] is True
+    assert manifest["pilot_ui"]["three_d_exposed"] is True
     assert manifest["pilot_ui"]["xp_navigation_exposed"] is False
     assert manifest["pilot_ui"]["assistant_navigation_exposed"] is False
     assert manifest["pilot_ui"]["course30_activity_exposed"] is False
@@ -35,20 +35,26 @@ def test_pilot_index_is_lightweight() -> None:
         'id="xpPill"',
         'data-view="assistant"',
         '/frontend/assistant_knowledge.js',
-        '/frontend/art_direction_v630.js',
-        '/frontend/digital_vehicle_3d_v630.js',
         '/frontend/digital_truck_3d_v630.js',
         '/frontend/game_lab_v618.js',
         '/frontend/game_world_v630.js',
         '/frontend/factory_journey_v2_v630.js',
         '/executive_visual_v630.css',
         '/executive_polish_v630.css',
-        '/art_direction_v630.css',
-        '/digital_vehicle_3d_v630.css',
         '/game_world_v630.css',
     ]
     for token in forbidden:
         assert token not in index, token
+
+    # v6.0.31.1: Art Direction / Digital Vehicle 3D restored to the pilot per
+    # company request (2026-09-23) — see RELEASE_MANIFEST_v6.0.31.json
+    # pilot_ui.presentation_exposed / three_d_exposed.
+    assert '/art_direction_v630.css' in index
+    assert '/digital_vehicle_3d_v630.css' in index
+    assert '/frontend/art_direction_v630.js' in index
+    assert '/frontend/digital_vehicle_3d_v630.js' in index
+    assert index.index('/art_direction_v630.css') < index.index('/digital_vehicle_3d_v630.css')
+    assert index.index('/frontend/art_direction_v630.js') < index.index('/frontend/digital_vehicle_3d_v630.js')
 
     assert '/pilot_simplified_v631.css' in index
     assert '/frontend/practice_games.js' in index
