@@ -1,0 +1,47 @@
+# Daily "users today" report to a Telegram channel (default 18:00 Europe/Moscow).
+# Works on top of any stack that defines `db` and an internal `backend` network:
+#
+#   docker compose -f docker-compose.lan.yml -f docker-compose.telegram-stats.yml \
+#       --env-file .env.lan up -d --build daily-stats
+#
+# Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in the same env file (see .env.telegram-stats.example).
+# The backend network is internal (no Internet), so this service also joins `egress`
+# to reach api.telegram.org. It only reads the database and only talks to Telegram.
+
+services:
+  daily-stats:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mgc-languages:telegram-stats
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: pilot
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-mgc_languages}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-mgc_languages}
+      AUTO_CREATE_SCHEMA: "false"
+      EXPECTED_ALEMBIC_HEAD: c57d0a31f570
+      DB_CONNECT_TIMEOUT_SECONDS: ${DB_CONNECT_TIMEOUT_SECONDS:-5}
+      DB_STATEMENT_TIMEOUT_MS: ${DB_STATEMENT_TIMEOUT_MS:-5000}
+      RLS_ENABLED: "true"
+      AUTH_MODE: local
+      REGISTRATION_ENABLED: "false"
+      OIDC_STATE_SECRET: ${OIDC_STATE_SECRET:?Set OIDC_STATE_SECRET in the env file}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:?Set TELEGRAM_BOT_TOKEN in the env file}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:?Set TELEGRAM_CHAT_ID in the env file}
+      STATS_TIMEZONE: ${STATS_TIMEZONE:-Europe/Moscow}
+      STATS_SEND_TIME: ${STATS_SEND_TIME:-18:00}
+    command: ["python", "/app/scripts/daily_user_stats.py", "--loop"]
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks: [backend, egress]
+    restart: unless-stopped
+
+networks:
+  egress: {}
