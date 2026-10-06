@@ -117,6 +117,16 @@
     {mesh:'cyl',pos:[-1.85,-.62,-1.13],scale:[.48,.48,.24],color:[.06,.08,.10]}
   ]);
 
+  function glContext(canvas){
+    const tries=[{alpha:true,antialias:true,powerPreference:'low-power'},{alpha:true},undefined];
+    for(let i=0;i<tries.length;i++){
+      try{
+        const gl=canvas.getContext('webgl',tries[i])||canvas.getContext('experimental-webgl',tries[i]);
+        if(gl) return gl;
+      }catch(_){}
+    }
+    return null;
+  }
   function shader(gl,type,source){
     const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);
     if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)||'shader');
@@ -142,7 +152,7 @@
     this.canvas=root.document.createElement('canvas');this.canvas.className='dv3d-canvas';this.canvas.setAttribute('aria-hidden','true');
     this.markerLayer=root.document.createElement('div');this.markerLayer.className='dv3d-markers';
     host.appendChild(this.canvas);host.appendChild(this.markerLayer);
-    this.gl=this.canvas.getContext('webgl',{alpha:true,antialias:true,powerPreference:'low-power'});
+    this.gl=glContext(this.canvas);
     if(!this.gl){this.destroy();throw new Error('WebGL unavailable')}
     const gl=this.gl;this.prog=program(gl);this.cube=makeMesh(gl,cubeVertices,cubeIndices);this.cyl=makeMesh(gl,cyl.vertices,cyl.indices);
     this.aPos=gl.getAttribLocation(this.prog,'aPos');this.aNormal=gl.getAttribLocation(this.prog,'aNormal');
@@ -271,6 +281,6 @@
   function install(){
     refresh();new MutationObserver(schedule).observe(root.document.body,{subtree:true,childList:true});
   }
-  frontend.register('digital-vehicle-3d-v630',{install:install,refresh:refresh,zones:ZONES});
+  frontend.register('digital-vehicle-3d-v630',{install:install,refresh:refresh,zones:ZONES,order:ORDER,create:function(host,opts){return new Vehicle3D(host,opts)}});
   if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })(window);
