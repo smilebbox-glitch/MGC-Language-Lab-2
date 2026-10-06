@@ -51,6 +51,9 @@
     if (frontend.has('chinese-reference') && frontend.get('chinese-reference').owns(view)) {
       return frontend.get('chinese-reference').navigate(view);
     }
+    if (frontend.has('pilot-3d') && frontend.get('pilot-3d').owns(view)) {
+      return frontend.get('pilot-3d').navigate(view);
+    }
     if (frontend.has('manager-admin') && frontend.get('manager-admin').owns(view)) {
       return frontend.get('manager-admin').navigate(view);
     }

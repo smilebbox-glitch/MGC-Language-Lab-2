@@ -61,6 +61,16 @@
     {mesh:'cyl',pos:[-2.55,-.60,-1.12],scale:[.56,.56,.25],color:[.04,.05,.06]}
   ]);
 
+  function glContext(canvas){
+    const tries=[{alpha:true,antialias:true,powerPreference:'low-power'},{alpha:true},undefined];
+    for(let i=0;i<tries.length;i++){
+      try{
+        const gl=canvas.getContext('webgl',tries[i])||canvas.getContext('experimental-webgl',tries[i]);
+        if(gl) return gl;
+      }catch(_){}
+    }
+    return null;
+  }
   function shader(gl,type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s)||'shader');return s}
   function makeProgram(gl){const vs=shader(gl,gl.VERTEX_SHADER,'attribute vec3 aPos;attribute vec3 aNormal;uniform mat4 uMVP;uniform mat4 uModel;varying vec3 vN;void main(){gl_Position=uMVP*vec4(aPos,1.0);vN=normalize(mat3(uModel)*aNormal);}'),fs=shader(gl,gl.FRAGMENT_SHADER,'precision mediump float;uniform vec3 uColor;varying vec3 vN;void main(){vec3 l=normalize(vec3(.4,.8,.5));float d=max(dot(normalize(vN),l),0.0);gl_FragColor=vec4(uColor*(.40+.60*d),1.0);}'),p=gl.createProgram();gl.attachShader(p,vs);gl.attachShader(p,fs);gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p)||'program');return p}
   function mesh(gl,v,i){const vb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.bufferData(gl.ARRAY_BUFFER,v,gl.STATIC_DRAW);const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,i,gl.STATIC_DRAW);return{vb:vb,ib:ib,count:i.length}}
@@ -69,7 +79,7 @@
     this.host=host;this.yaw=-.18;this.pitch=-.06;this.drag=false;this.lastX=0;this.lastY=0;
     this.canvas=root.document.createElement('canvas');this.canvas.className='dv3d-canvas';this.canvas.setAttribute('aria-hidden','true');
     this.markers=root.document.createElement('div');this.markers.className='dv3d-markers';host.appendChild(this.canvas);host.appendChild(this.markers);
-    this.gl=this.canvas.getContext('webgl',{alpha:true,antialias:true,powerPreference:'low-power'});if(!this.gl)throw new Error('WebGL unavailable');
+    this.gl=glContext(this.canvas);if(!this.gl)throw new Error('WebGL unavailable');
     const gl=this.gl;this.prog=makeProgram(gl);this.cube=mesh(gl,cubeV,cubeI);this.cyl=mesh(gl,cyl.v,cyl.i);this.aPos=gl.getAttribLocation(this.prog,'aPos');this.aNormal=gl.getAttribLocation(this.prog,'aNormal');this.uMVP=gl.getUniformLocation(this.prog,'uMVP');this.uModel=gl.getUniformLocation(this.prog,'uModel');this.uColor=gl.getUniformLocation(this.prog,'uColor');
     this.addMarkers();this.bind();this.resize();this.render();this.ro=new ResizeObserver(()=>{this.resize();this.render()});this.ro.observe(host);
   }
@@ -95,6 +105,6 @@
     proof.appendChild(btn);
   }
   function install(){installTruckSelector();new MutationObserver(installTruckSelector).observe(root.document.body,{subtree:true,childList:true})}
-  frontend.register('digital-truck-3d-v630',{install:install,zones:TRUCK_ZONES});
+  frontend.register('digital-truck-3d-v630',{install:install,zones:TRUCK_ZONES,order:ORDER,create:function(host){return new Truck3D(host)}});
   if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })(window);
