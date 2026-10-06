@@ -5,6 +5,7 @@
 !.env.pilot.example
 !.env.lan.example
 !.env.vm.example
+!.env.telegram-stats.example
 
 # Server TLS material must stay local to the deployment host.
 deploy/tls/*
