@@ -1,0 +1,53 @@
+name: Language Lab dependency security
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "requirements.txt"
+      - ".github/workflows/security-dependencies.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lang-deps-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security-deps:
+    name: Install, audit and test security-sensitive dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install declared production packages
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+      - name: Validate dependency resolution
+        run: python -m pip check
+      - name: Audit package versions against published vulnerabilities
+        run: |
+          python -m pip install --disable-pip-version-check "pip-audit==2.10.1"
+          python -m pip_audit --requirement requirements.txt
+      - name: Verify OAuth/OIDC and telemetry module imports
+        run: |
+          python - <<'PY'
+          from authlib.integrations.starlette_client import OAuth
+          from opentelemetry import trace
+          from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+          from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+          assert OAuth and trace and FastAPIInstrumentor and SQLAlchemyInstrumentor
+          print("PASS: OIDC and instrumentation modules import successfully")
+          PY
+      - name: Regression — authentication core and ASGI runtime
+        run: |
+          python tests/v575_auth_core_test.py
+          python tests/v575_auth_runtime_test.py
+      - name: Regression — OpenTelemetry / metrics runtime
+        run: python tests/v581_observability_runtime_test.py
