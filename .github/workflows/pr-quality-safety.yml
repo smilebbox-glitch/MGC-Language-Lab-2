@@ -1,0 +1,68 @@
+name: Language Lab PR quality and dependency safety
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "mgc/**"
+      - "mgc_core/**"
+      - "static/**"
+      - "requirements.txt"
+      - "tests/**"
+      - "scripts/**"
+      - "AGENTS.md"
+      - ".agents/skills/**"
+      - ".github/workflows/pr-quality-safety.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: language-pr-safety-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pilot-contracts:
+    name: Pilot UI, Python and security contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Syntax-check Python sources without external dependencies
+        run: python -m compileall -q mgc mgc_core tests scripts
+      - name: Simplified v6.0.31 pilot regression
+        run: python tests/v631_simplified_pilot_test.py
+      - name: Check canonical UI and VM contract
+        run: |
+          python tests/test_mgc_language_lab_2_premium.py
+          python tests/v631_vm_deployment_kit_test.py
+      - name: Check pilot frontend JavaScript syntax
+        run: |
+          node --check static/frontend/navigation.js
+          node --check static/frontend/games_ui_fix_v631.js
+          node --check static/frontend/premium_home_v631.js
+
+  python-dependency-audit:
+    name: Audit pinned Python requirements
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependency auditor only in disposable CI
+        run: python -m pip install --disable-pip-version-check pip-audit
+      - name: Fail on published dependency vulnerabilities
+        run: python -m pip_audit --requirement requirements.txt
